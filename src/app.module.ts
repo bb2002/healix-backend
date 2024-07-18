@@ -3,6 +3,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { HospitalModule } from './hospital/hospital.module';
+import { AuthModule } from './auth/auth.module';
+import { AppController } from './app.controller';
+import { TerminusModule } from '@nestjs/terminus';
 
 @Module({
   imports: [
@@ -24,7 +27,10 @@ import { HospitalModule } from './hospital/hospital.module';
         synchronize: true,
       }),
     }),
+    TerminusModule,
     HospitalModule,
+    AuthModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}
