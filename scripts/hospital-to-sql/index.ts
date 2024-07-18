@@ -65,23 +65,30 @@ async function main() {
   });
 
   const writeStream = createWriteStream('hospitals.sql');
+  const limit = 10;
+  let size = 0;
   for (const key in results) {
     const institution = results[key];
     const line =
       'INSERT INTO dbo.hospitals (' +
       'institution_name,institution_type,medical_department,medical_department_doctor_count,homepage,address,tel,latitude,longitude' +
       ') VALUES (' +
-      `N${institution.institution_name ? `'${institution.institution_name}'` : 'NULL'},` +
-      `N${institution.institution_type ? `'${institution.institution_type}'` : 'NULL'},` +
-      `N${institution.medical_department ? `'${institution.medical_department}'` : 'NULL'},` +
+      `${institution.institution_name ? `N'${institution.institution_name}'` : 'NULL'},` +
+      `${institution.institution_type ? `N'${institution.institution_type}'` : 'NULL'},` +
+      `${institution.medical_department ? `N'${institution.medical_department}'` : 'NULL'},` +
       `${institution.medical_department_doctor_count !== null ? institution.medical_department_doctor_count : 'NULL'},` +
-      `N${institution.homepage ? `'${institution.homepage}'` : 'NULL'},` +
-      `N${institution.address ? `'${institution.address}'` : 'NULL'},` +
-      `N${institution.tel ? `'${institution.tel}'` : 'NULL'},` +
+      `${institution.homepage ? `N'${institution.homepage}'` : 'NULL'},` +
+      `${institution.address ? `N'${institution.address}'` : 'NULL'},` +
+      `${institution.tel ? `'${institution.tel}'` : 'NULL'},` +
       `${institution.latitude !== null ? institution.latitude : 'NULL'},` +
       `${institution.longitude !== null ? institution.longitude : 'NULL'}` +
       ');';
     writeStream.write(line + '\n');
+    ++size;
+
+    if (size > limit) {
+      break;
+    }
   }
 
   writeStream.end(() => {

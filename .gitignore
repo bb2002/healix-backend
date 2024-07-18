@@ -6,6 +6,7 @@
 # scripts
 /scripts/hospital-to-sql/node_modules
 /scripts/hospital-to-sql/*.csv
+/scripts/hospital-to-sql/*.sql
 
 # Logs
 logs
