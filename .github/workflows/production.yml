@@ -44,6 +44,6 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'app-healix-prod'
+          app-name: 'webapp-healix-prod'
           slot-name: 'Production'
           package: './release.zip'
