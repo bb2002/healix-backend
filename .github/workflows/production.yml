@@ -1,49 +1,36 @@
-name: Build and deploy Node.js app to Azure Web App - app-healix-prod
+name: Deploy to Azure
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
-
-permissions:
-  id-token: write # This is required for requesting the JWT
-  contents: read
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      - name: Set up Node.js version
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20.x'
+    - name: Clone Azure Web App repository
+      env:
+        AZURE_USER: ${{ secrets.AZURE_USER }}
+        AZURE_PASSWORD: ${{ secrets.AZURE_PASSWORD }}
+      run: |
+        git clone https://$AZURE_USER:$AZURE_PASSWORD@webapp-healix-prod.scm.azurewebsites.net:443/webapp-healix-prod.git
 
-      - name: npm install, build
-        run: |
-          npm ci
-          npm run build
+    - name: Copy files to Azure repo
+      run: |
+        mv webapp-healix-prod ../
+        mv ./* ../webapp-healix-prod
 
-      - name: Zip artifact for deployment
-        run: zip -r release.zip dist node_modules package.json
-
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_F91FCED1DEE947DC9F6D5DB65CAEC8A0 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_C515B8CB22D948C5B18D60DF8216A4BA }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_C9D09788A8EF466BB8549241E8185EED }}
-
-      - name: 'Deploy to Azure Web App'
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: 'app-healix-prod'
-          slot-name: 'Production'
-          package: './release.zip'
+    - name: Commit and push changes
+      run: |
+        cd ../webapp-healix-prod
+        git config --global user.email "5252bb@daum.net"
+        git config --global user.name "Ballbot"
+        git add *
+        DATE=$(date +'%Y-%m-%d')
+        git commit -m "deploy on $DATE"
+        git push origin master
