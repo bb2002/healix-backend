@@ -34,7 +34,7 @@ jobs:
     - name: Commit and push changes
       run: |
         cd webapp-healix-prod
-        git add -q *
+        git add *
         DATE=$(date +'%Y-%m-%d')
         git commit -m "deploy on $DATE"
         git push origin master
