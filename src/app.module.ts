@@ -25,6 +25,7 @@ import { TerminusModule } from '@nestjs/terminus';
         database: configService.get<string>('AZURE_SQL_NAME'),
         entities: [__dirname + '/**/entities/*.entity{.ts,.js}'],
         synchronize: true,
+        connectionTimeout: 1000 * 120,
       }),
     }),
     TerminusModule,
