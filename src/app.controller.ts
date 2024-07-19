@@ -22,7 +22,10 @@ export class AppController {
   })
   check() {
     return this.healthCheckService.check([
-      () => this.typeormHealthIndicator.pingCheck('database'),
+      () =>
+        this.typeormHealthIndicator.pingCheck('database', {
+          timeout: 1000 * 120,
+        }),
     ]);
   }
 }
