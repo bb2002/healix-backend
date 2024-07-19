@@ -35,5 +35,6 @@ jobs:
       run: |
         cd webapp-healix-prod
         git add -q *
-        git commit -m "deploy"
+        DATE=$(date +'%Y-%m-%d')
+        git commit -m "deploy on $DATE"
         git push origin master
