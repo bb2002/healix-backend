@@ -23,7 +23,7 @@ jobs:
     - name: Copy files to Azure repo
       run: |
         mv webapp-healix-prod ../
-        cp -r . ../webapp-healix-prod
+        mv ./* ../webapp-healix-prod
 
     - name: Commit and push changes
       run: |
