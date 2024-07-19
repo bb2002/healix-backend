@@ -6,6 +6,7 @@ import { HospitalModule } from './hospital/hospital.module';
 import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
 import { TerminusModule } from '@nestjs/terminus';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { TerminusModule } from '@nestjs/terminus';
     TerminusModule,
     HospitalModule,
     AuthModule,
+    UserModule,
   ],
   controllers: [AppController],
 })

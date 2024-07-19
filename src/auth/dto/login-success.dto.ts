@@ -2,7 +2,7 @@ import LoginProvider from '../enums/LoginProvider';
 
 export default class LoginSuccessDto {
   provider: LoginProvider;
-  uniqueId: string;
+  providerId: string;
   name: string;
   profileImageUrl: string;
 }
