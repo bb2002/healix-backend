@@ -13,11 +13,6 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Install dependencies and build
-      run: |
-        npm ci
-        npm run build
-
     - name: Clone Azure Web App repository
       env:
         AZURE_USER: ${{ secrets.AZURE_USER }}
@@ -27,13 +22,12 @@ jobs:
 
     - name: Copy files to Azure repo
       run: |
-        cp -r dist/* webapp-healix-prod/
-        cp -r node_modules/ webapp-healix-prod/
-        cp package.json webapp-healix-prod/
+        mv webapp-healix-prod ../
+        cp -r . ../webapp-healix-prod
 
     - name: Commit and push changes
       run: |
-        cd webapp-healix-prod
+        cd ../webapp-healix-prod
         git config --global user.email "5252bb@daum.net"
         git config --global user.name "Ballbot"
         git add *
