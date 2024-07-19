@@ -34,6 +34,8 @@ jobs:
     - name: Commit and push changes
       run: |
         cd webapp-healix-prod
+        git config --global user.email "5252bb@daum.net"
+        git config --global user.name "Ballbot"
         git add *
         DATE=$(date +'%Y-%m-%d')
         git commit -m "deploy on $DATE"
