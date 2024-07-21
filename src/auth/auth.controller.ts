@@ -42,18 +42,19 @@ export class AuthController {
     description: '구글 API를 통해 구글 계정 로그인을 수행합니다.',
   })
   @Put('/google')
-  signInWithGoogle(@Res() response: Response) {
-    // 구글 인증 토큰을 받고, 그 토큰을 통해 유저의 프로필을 읽고
-    // 읽은 프로필을 LoginSuccessDto 에 담은 다음
-    // dto = this.authService.signInWithGoogle();
-
-    const dto = {
-      provider: LoginProvider.GOOGLE,
-      providerId: 'P@ssw0rd',
-      name: 'KakaoUser',
-      profileImageUrl: 'https://www.daum.net',
-    } as LoginSuccessDto;
-    response.cookie('Authorization', 'Bearer ' + this.userService.signIn(dto));
-    response.sendStatus(HttpStatus.OK);
+  async signInWithGoogle(
+    @Res() response: Response,
+    @Body('token') token: string,
+  ) {
+    try {
+      const dto = await this.authService.signInWithGoogle(token);
+      response.cookie(
+        'Authorization',
+        'Bearer ' + this.userService.signIn(dto),
+      );
+      response.sendStatus(HttpStatus.OK);
+    } catch (error) {
+      response.sendStatus(HttpStatus.UNAUTHORIZED);
+    }
   }
 }
