@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
 import { TerminusModule } from '@nestjs/terminus';
 import { UserModule } from './user/user.module';
+import { OpenaiModule } from './openai/openai.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { UserModule } from './user/user.module';
     HospitalModule,
     AuthModule,
     UserModule,
+    OpenaiModule,
   ],
   controllers: [AppController],
 })

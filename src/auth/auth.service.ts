@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import LoginSuccessDto from './dto/login-success.dto';
-import LoginProvider from './enums/LoginProvider';
+import LoginProvider from '../common/enums/LoginProvider';
 import axios from 'axios';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';

@@ -1,4 +1,4 @@
-import LoginProvider from '../enums/LoginProvider';
+import LoginProvider from '../../common/enums/LoginProvider';
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 
 export default class LoginSuccessDto {
