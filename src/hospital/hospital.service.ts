@@ -18,17 +18,16 @@ export class HospitalService {
     longitude: number,
     radius: number,
   ): Promise<NearbyHospitalDto[]> {
-    const hospitals = await this.hospitalRepository.query(
-      `
-      SELECT *
-      FROM hospitals
-      WHERE ST_Distance_Sphere(
-        point(longitude, latitude),
-        point(?, ?)
-      ) <= ?
-    `,
-      [longitude, latitude, longitude, latitude, radius * 1000],
-    );
+    const hospitals = await this.hospitalRepository
+      .createQueryBuilder('hospital')
+      .where(
+        `ST_Distance_Sphere(
+          point(hospital.longitude, hospital.latitude),
+          point(:longitude, :latitude)
+        ) <= :radius`,
+        { longitude, latitude, radius: radius * 1000 },
+      )
+      .getMany();
 
     const hospitalDtos = hospitals.map((hospital: HospitalEntity) => {
       const dto = plainToInstance(NearbyHospitalDto, {
