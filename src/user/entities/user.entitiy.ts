@@ -5,7 +5,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import LoginProvider from '../../auth/enums/LoginProvider';
+import LoginProvider from '../../common/enums/LoginProvider';
 
 @Entity('users')
 export default class UserEntity {
