@@ -4,8 +4,10 @@ import {
   DeleteDateColumn,
   Entity,
   PrimaryGeneratedColumn,
+  OneToMany,
 } from 'typeorm';
 import LoginProvider from '../../common/enums/LoginProvider';
+import ExamineEntity from '../../examine/entities/examine.entity';
 
 @Entity('users')
 export default class UserEntity {
@@ -29,4 +31,7 @@ export default class UserEntity {
 
   @DeleteDateColumn()
   deletedAt: Date;
+
+  @OneToMany(() => ExamineEntity, (examine) => examine.user)
+  examines: ExamineEntity[];
 }
