@@ -2,8 +2,10 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import AppointmentEntity from './appointment.entity';
 
 @Entity('hospitals')
 class HospitalEntity {
@@ -43,6 +45,9 @@ class HospitalEntity {
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
+
+  @OneToMany(() => AppointmentEntity, (appointment) => appointment.hospital)
+  appointment: AppointmentEntity[];
 }
 
 export default HospitalEntity;
