@@ -9,8 +9,8 @@ import UserEntity from 'src/user/entities/user.entity';
 export class HospitalController {
   constructor(private readonly hospitalService: HospitalService) {}
 
-  @UseGuards(AuthGuard)
   @Post(':hospitalId/appointment')
+  @UseGuards(AuthGuard)
   createAppointment(
     @Param('hospitalId') hospitalId: number,
     @Body() createAppointmentDto: CreateAppointmentDto,
