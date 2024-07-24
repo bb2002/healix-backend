@@ -5,6 +5,8 @@ import { plainToInstance } from 'class-transformer';
 import GetDiseaseNameDto from './dto/get-disease-name.dto';
 import { validate } from 'class-validator';
 import { AuthGuard } from 'src/common/guards/auth.guard';
+import { User } from 'src/common/decorators/user.decorator';
+import UserEntity from 'src/user/entities/user.entity';
 
 @Controller('openai')
 export class OpenaiController {
@@ -17,6 +19,7 @@ export class OpenaiController {
     @Query('symptomComment') symptomComment,
     @Query('gender') gender,
     @Query('age') age,
+    @User() user: UserEntity,
   ) {
     const dto = plainToInstance(GetDiseaseNameDto, {
       symptomSites: symptomSites.split(','),
@@ -25,6 +28,7 @@ export class OpenaiController {
       age: Number(age),
     });
     await validate(dto);
+    console.log(user);
     return {
       // sym: await this.openAIService.getDiseaseName(dto),
       sym: '돈들어서이건뺌',

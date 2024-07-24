@@ -2,7 +2,7 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../../user/user.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -20,15 +20,17 @@ export class AuthGuard implements CanActivate {
       return false;
     }
 
+    console.log('jwtsec: ', this.configService.get<string>('JWT_SECRET'));
+
     const payload = await this.jwtService.verifyAsync(authorization, {
       secret: this.configService.get<string>('JWT_SECRET'),
     });
 
-    if (!payload || Number.isNaN(payload['id'])) {
+    if (!payload) {
       return false;
     }
 
-    const user = await this.userService.findUserById(Number(payload['id']));
+    const user = await this.userService.findByProviderId(payload['providerId']);
     if (!user) {
       return false;
     }

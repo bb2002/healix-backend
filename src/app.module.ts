@@ -26,7 +26,7 @@ import { JwtModule } from '@nestjs/jwt';
         username: configService.get<string>('AZURE_SQL_USER'),
         password: configService.get<string>('AZURE_SQL_PASS'),
         database: configService.get<string>('AZURE_SQL_NAME'),
-        entities: [__dirname + '/**/entities/*.entity{.ts,.js}'],
+        entities: [__dirname + '/**/entities/*.entity.{ts,js}'],
         synchronize: true,
         connectionTimeout: 1000 * 120,
       }),
@@ -35,7 +35,7 @@ import { JwtModule } from '@nestjs/jwt';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'),
+        secretOrPrivateKey: configService.get<string>('JWT_SECRET'),
         signOptions: { expiresIn: '1d' },
         global: true,
       }),
