@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import HospitalEntity from '../../hospital/entities/hospital.entity';
-import UserEntity from 'src/user/entities/user.entitiy';
+import UserEntity from 'src/user/entities/user.entity';
 
 @Entity('appointments')
 class AppointmentEntity {
