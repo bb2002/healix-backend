@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 import GetDiseaseNameDto from './dto/get-disease-name.dto';
-import Gender from 'src/common/enums/Gender';
+import Gender from '../common/enums/Gender';
 
 @Injectable()
 export class OpenaiService {

@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import HospitalEntity from 'src/hospital/entities/hospital.entity';
+import HospitalEntity from '../hospital/entities/hospital.entity';
 import { Repository } from 'typeorm';
 import AppointmentEntity from './entities/appointment.entity';
 import CreateAppointmentDto from './dto/create-appointment.dto';
-import UserEntity from 'src/user/entities/user.entity';
+import UserEntity from '../user/entities/user.entity';
 
 @Injectable()
 export class AppointmentService {

@@ -2,8 +2,8 @@ import { Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
 import { HospitalService } from './hospital.service';
 import CreateAppointmentDto from '../appointment/dto/create-appointment.dto';
 import { AuthGuard } from '../common/guards/auth.guard';
-import { User } from 'src/common/decorators/user.decorator';
-import UserEntity from 'src/user/entities/user.entity';
+import { User } from '../common/decorators/user.decorator';
+import UserEntity from '../user/entities/user.entity';
 
 @Controller('hospital')
 export class HospitalController {

@@ -1,5 +1,5 @@
 import { IsArray, IsEnum, IsNumber, IsString } from 'class-validator';
-import Gender from 'src/common/enums/Gender';
+import Gender from '../../common/enums/Gender';
 
 export default class GetDiseaseNameDto {
   @IsArray()
