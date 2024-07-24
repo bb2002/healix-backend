@@ -8,6 +8,7 @@ import { AppController } from './app.controller';
 import { TerminusModule } from '@nestjs/terminus';
 import { UserModule } from './user/user.module';
 import { OpenaiModule } from './openai/openai.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -25,9 +26,18 @@ import { OpenaiModule } from './openai/openai.module';
         username: configService.get<string>('AZURE_SQL_USER'),
         password: configService.get<string>('AZURE_SQL_PASS'),
         database: configService.get<string>('AZURE_SQL_NAME'),
-        entities: [__dirname + '/**/entities/*.entity{.ts,.js}'],
+        entities: [__dirname + '/**/entities/*.entity.{ts,js}'],
         synchronize: true,
         connectionTimeout: 1000 * 120,
+      }),
+    }),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secretOrPrivateKey: configService.get<string>('JWT_SECRET'),
+        signOptions: { expiresIn: '1d' },
+        global: true,
       }),
     }),
     TerminusModule,

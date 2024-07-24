@@ -1,20 +1,25 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { OpenaiService } from './openai.service';
 import Gender from 'src/common/enums/Gender';
 import { plainToInstance } from 'class-transformer';
 import GetDiseaseNameDto from './dto/get-disease-name.dto';
 import { validate } from 'class-validator';
+import { AuthGuard } from 'src/common/guards/auth.guard';
+import { User } from 'src/common/decorators/user.decorator';
+import UserEntity from 'src/user/entities/user.entity';
 
 @Controller('openai')
 export class OpenaiController {
   constructor(private readonly openAIService: OpenaiService) {}
 
+  @UseGuards(AuthGuard)
   @Get('/disease-name')
   async testGetDiseaseName(
     @Query('symptomSites') symptomSites: string,
     @Query('symptomComment') symptomComment,
     @Query('gender') gender,
     @Query('age') age,
+    @User() user: UserEntity,
   ) {
     const dto = plainToInstance(GetDiseaseNameDto, {
       symptomSites: symptomSites.split(','),
@@ -23,6 +28,7 @@ export class OpenaiController {
       age: Number(age),
     });
     await validate(dto);
+    console.log(user);
     return {
       // sym: await this.openAIService.getDiseaseName(dto),
       sym: '돈들어서이건뺌',
