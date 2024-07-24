@@ -5,7 +5,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import AppointmentEntity from './appointment.entity';
+import AppointmentEntity from '../../appointment/entities/appointment.entity';
 
 @Entity('hospitals')
 class HospitalEntity {

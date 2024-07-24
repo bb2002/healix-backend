@@ -5,16 +5,15 @@ import HospitalEntity from './entities/hospital.entity';
 import { Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import CreateAppointmentDto from './dto/creat-appointment.dto';
-import AppointmentEntity from './entities/appointment.entity';
+import CreateAppointmentDto from '../appointment/dto/creat-appointment.dto';
+import { AppointmentService } from 'src/appointment/appointment.service';
 
 @Injectable()
 export class HospitalService {
   constructor(
     @InjectRepository(HospitalEntity)
     private readonly hospitalRepository: Repository<HospitalEntity>,
-    @InjectRepository(AppointmentEntity)
-    private readonly appointmentRepository: Repository<AppointmentEntity>,
+    private readonly appointmentService: AppointmentService,
   ) {}
 
   async findNearbyHospitals(
@@ -62,18 +61,9 @@ export class HospitalService {
     hospitalId: number,
     createAppointmentDto: CreateAppointmentDto,
   ) {
-    const hospital = await this.hospitalRepository.findOne({
-      where: { id: hospitalId },
-    });
-    if (!hospital) {
-      throw new Error('Hospital not found');
-    }
-
-    const appointment = this.appointmentRepository.create({
-      ...createAppointmentDto,
-      hospital,
-    });
-
-    return this.appointmentRepository.save(appointment);
+    return this.appointmentService.createAppointment(
+      hospitalId,
+      createAppointmentDto,
+    );
   }
 }
