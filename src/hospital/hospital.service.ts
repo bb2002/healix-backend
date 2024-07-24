@@ -5,12 +5,16 @@ import HospitalEntity from './entities/hospital.entity';
 import { Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
+import CreateAppointmentDto from '../appointment/dto/create-appointment.dto';
+import { AppointmentService } from 'src/appointment/appointment.service';
+import UserEntity from 'src/user/entities/user.entity';
 
 @Injectable()
 export class HospitalService {
   constructor(
     @InjectRepository(HospitalEntity)
     private readonly hospitalRepository: Repository<HospitalEntity>,
+    private readonly appointmentService: AppointmentService,
   ) {}
 
   async findNearbyHospitals(
@@ -52,5 +56,17 @@ export class HospitalService {
     }
 
     return hospitalDtos;
+  }
+
+  async createAppointment(
+    hospitalId: number,
+    createAppointmentDto: CreateAppointmentDto,
+    user: UserEntity,
+  ) {
+    return this.appointmentService.createAppointment(
+      hospitalId,
+      createAppointmentDto,
+      user,
+    );
   }
 }
