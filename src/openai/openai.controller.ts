@@ -1,14 +1,16 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { OpenaiService } from './openai.service';
 import Gender from 'src/common/enums/Gender';
 import { plainToInstance } from 'class-transformer';
 import GetDiseaseNameDto from './dto/get-disease-name.dto';
 import { validate } from 'class-validator';
+import { AuthGuard } from 'src/common/guards/auth.guard';
 
 @Controller('openai')
 export class OpenaiController {
   constructor(private readonly openAIService: OpenaiService) {}
 
+  @UseGuards(AuthGuard)
   @Get('/disease-name')
   async testGetDiseaseName(
     @Query('symptomSites') symptomSites: string,

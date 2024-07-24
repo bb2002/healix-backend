@@ -8,6 +8,7 @@ import { AppController } from './app.controller';
 import { TerminusModule } from '@nestjs/terminus';
 import { UserModule } from './user/user.module';
 import { OpenaiModule } from './openai/openai.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -28,6 +29,15 @@ import { OpenaiModule } from './openai/openai.module';
         entities: [__dirname + '/**/entities/*.entity{.ts,.js}'],
         synchronize: true,
         connectionTimeout: 1000 * 120,
+      }),
+    }),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: { expiresIn: '1d' },
+        global: true,
       }),
     }),
     TerminusModule,
