@@ -32,6 +32,7 @@ jobs:
         git config --global user.email "5252bb@daum.net"
         git config --global user.name "Ballbot"
         git add *
+        git rm *
         DATE=$(date +'%Y-%m-%d')
         git commit -m "deploy on $DATE"
         git push origin master
