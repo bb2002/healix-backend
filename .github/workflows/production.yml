@@ -25,7 +25,7 @@ jobs:
 
     - name: Copy files to Azure repo
       run: |
-        mv healix-backend/* webapp-healix-prod
+        mv healix-backend/* webapp-healix-prod/
 
     - name: Commit and push changes
       run: |
