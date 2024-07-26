@@ -19,6 +19,7 @@ jobs:
         AZURE_PASSWORD: ${{ secrets.AZURE_PASSWORD }}
       run: |
         cd ..
+        ls -al
         git clone https://$AZURE_USER:$AZURE_PASSWORD@webapp-healix-prod.scm.azurewebsites.net:443/webapp-healix-prod.git
         rm -rf webapp-healix-prod/*
 
