@@ -9,6 +9,7 @@ import { TerminusModule } from '@nestjs/terminus';
 import { UserModule } from './user/user.module';
 import { OpenaiModule } from './openai/openai.module';
 import { JwtModule } from '@nestjs/jwt';
+import { ExamineModule } from './examine/examine.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { JwtModule } from '@nestjs/jwt';
     AuthModule,
     UserModule,
     OpenaiModule,
+    ExamineModule,
   ],
   controllers: [AppController],
 })
