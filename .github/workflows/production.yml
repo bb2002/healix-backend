@@ -18,13 +18,13 @@ jobs:
         AZURE_USER: ${{ secrets.AZURE_USER }}
         AZURE_PASSWORD: ${{ secrets.AZURE_PASSWORD }}
       run: |
+        cd ..
         git clone https://$AZURE_USER:$AZURE_PASSWORD@webapp-healix-prod.scm.azurewebsites.net:443/webapp-healix-prod.git
         rm -rf webapp-healix-prod/*
 
     - name: Copy files to Azure repo
       run: |
-        shopt -s dotglob
-        cp -r * webapp-healix-prod/
+        mv healix-backend/* webapp-healix-prod
 
     - name: Commit and push changes
       run: |
