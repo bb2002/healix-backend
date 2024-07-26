@@ -1,4 +1,4 @@
-import { IsArray, IsEnum, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsEnum, IsInt, IsString, Max, Min } from 'class-validator';
 import Gender from '../../common/enums/Gender';
 
 export default class GetDiseaseNameDto {
@@ -12,6 +12,8 @@ export default class GetDiseaseNameDto {
   @IsEnum(Gender)
   gender: Gender;
 
-  @IsNumber()
-  age: number;
+  @IsInt()
+  @Min(1900)
+  @Max(new Date().getFullYear())
+  birthYear: number;
 }

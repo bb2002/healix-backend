@@ -30,13 +30,13 @@ export class OpenaiService {
 증상위치: ${dto.symptomSites.join(',')}
 증상내용: ${dto.symptomComment}
 성별: ${dto.gender == Gender.MAN ? '남자' : '여자'}
-나이: ${dto.age}살
+태어난날: ${dto.birthYear}년
           `,
         },
       ],
     });
 
-    const message = chatCompletion.choices[0].message.content;
+    const message = chatCompletion?.choices[0]?.message?.content;
     if (message && message != '알수없음') {
       return message;
     }
@@ -44,7 +44,7 @@ export class OpenaiService {
     return null;
   }
 
-  async getDiseaseDetail(diseaseName: string): Promise<string | null> {
+  async getDiseaseSolution(diseaseName: string): Promise<string | null> {
     const chatCompletion = await this.openAI.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
@@ -55,7 +55,7 @@ export class OpenaiService {
       ],
     });
 
-    const message = chatCompletion.choices[0].message.content;
+    const message = chatCompletion?.choices[0]?.message?.content;
     if (message) {
       return message;
     }

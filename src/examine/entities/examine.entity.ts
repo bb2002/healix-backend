@@ -1,11 +1,4 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
-import UserEntity from '../../user/entities/user.entity';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import Symptom from '../../common/enums/Symptom';
 import Gender from '../../common/enums/Gender';
 
@@ -14,11 +7,11 @@ export default class ExamineEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'symptoms', type: 'simple-enum', enum: Symptom })
-  symptoms: Symptom[];
+  @Column({ name: 'symptom_sites', type: 'simple-enum', enum: Symptom })
+  symptomSites: Symptom[];
 
-  @Column({ name: 'detailed_symptom', type: 'text', nullable: true })
-  detailedSymptom: string;
+  @Column({ name: 'symptom_comment', type: 'text', nullable: true })
+  symptomComment: string;
 
   @Column({ name: 'gender', type: 'simple-enum', enum: Gender })
   gender: Gender;
@@ -26,7 +19,9 @@ export default class ExamineEntity {
   @Column({ name: 'birth_year', type: 'int' })
   birthYear: number;
 
-  @ManyToOne(() => UserEntity, (user) => user.examines)
-  @JoinColumn({ name: 'user' })
-  user: UserEntity;
+  @Column({ name: 'disease_name', type: 'string', nullable: true })
+  diseaseName: string | null;
+
+  @Column({ name: 'disease_solution', type: 'string', nullable: true })
+  diseaseSolution: string | null;
 }

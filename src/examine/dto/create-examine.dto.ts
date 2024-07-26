@@ -12,15 +12,15 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class ExamineDto {
+export class RequestCreateExamineDto {
   @IsArray()
   @ArrayNotEmpty()
   @IsEnum(Symptom, { each: true })
-  symptoms: Symptom[];
+  symptomSites: Symptom[];
 
   @IsString()
   @IsOptional()
-  detailedSymptom: string;
+  symptomComment: string;
 
   @IsEnum(Gender)
   gender: Gender;
@@ -30,4 +30,23 @@ export class ExamineDto {
   @Min(1900)
   @Max(new Date().getFullYear())
   birthYear: number;
+}
+
+export class CreateExamineDto extends RequestCreateExamineDto {
+  @IsString()
+  diseaseName: string;
+
+  @IsString()
+  diseaseSolution: string;
+}
+
+export class ResponseCreateExamineDto {
+  @IsInt()
+  examineId: number;
+
+  @IsString()
+  diseaseName: string;
+
+  @IsString()
+  diseaseSolution: string;
 }
