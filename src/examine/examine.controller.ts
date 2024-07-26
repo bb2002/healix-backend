@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiOperation,
@@ -39,29 +40,21 @@ export class ExamineController {
     type: ResponseCreateExamineDto,
   })
   @ApiInternalServerErrorResponse()
+  @ApiBadRequestResponse()
   @Post('/')
   async examine(@Body() dto: RequestCreateExamineDto) {
     const getDiseaseNameDto = plainToInstance(GetDiseaseNameDto, {
       symptomSites: dto.symptomSites.map((val) => symptomToRealName(val)),
       symptomComment: dto.symptomComment,
       birthYear: dto.birthYear,
+      gender: dto.gender,
     });
     await validateOrReject(getDiseaseNameDto);
 
     const diseaseName =
       await this.openAIService.getDiseaseName(getDiseaseNameDto);
-    if (!diseaseName) {
-      throw new InternalServerErrorException(
-        'openAIService.getDiseaseName() return null',
-      );
-    }
-
-    const diseaseSolution = this.openAIService.getDiseaseSolution(diseaseName);
-    if (!diseaseSolution) {
-      throw new InternalServerErrorException(
-        'openAIService.getDiseaseSolution() return null',
-      );
-    }
+    const diseaseSolution =
+      await this.openAIService.getDiseaseSolution(diseaseName);
 
     const examine = await this.examineService.createExamine(
       plainToInstance(CreateExamineDto, {

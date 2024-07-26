@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 import GetDiseaseNameDto from './dto/get-disease-name.dto';
 import Gender from '../common/enums/Gender';
+import { UnknownDiseaseException } from './exceptions/unknown-disease.exception';
 
 @Injectable()
 export class OpenaiService {
@@ -41,7 +42,7 @@ export class OpenaiService {
       return message;
     }
 
-    return null;
+    throw new UnknownDiseaseException();
   }
 
   async getDiseaseSolution(diseaseName: string): Promise<string | null> {
@@ -60,6 +61,6 @@ export class OpenaiService {
       return message;
     }
 
-    return null;
+    throw new UnknownDiseaseException();
   }
 }
