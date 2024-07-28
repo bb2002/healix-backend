@@ -1,8 +1,18 @@
-import { Controller, HttpStatus, Put, Res, Body } from '@nestjs/common';
+import {
+  Controller,
+  HttpStatus,
+  Put,
+  Res,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
 import { UserService } from '../user/user.service';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from 'src/common/guards/auth.guard';
+import { User } from 'src/common/decorators/user.decorator';
+import UserEntity from 'src/user/entities/user.entity';
 
 @ApiTags('Authorization')
 @Controller('auth')
@@ -70,6 +80,15 @@ export class AuthController {
     } catch (error) {
       console.error('Error during google login:', error);
       response.sendStatus(HttpStatus.UNAUTHORIZED);
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  async verifyToken(@User() user: UserEntity) {
+    if (user == null) {
+      return null;
+    } else {
+      return user;
     }
   }
 }
