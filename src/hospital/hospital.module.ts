@@ -6,6 +6,8 @@ import { AppointmentModule } from '../appointment/appointment.module';
 import { HospitalController } from './hospital.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from '../user/user.module';
+import { ExamineModule } from 'src/examine/examine.module';
+import { OpenaiModule } from 'src/openai/openai.module';
 
 @Module({
   providers: [HospitalService],
@@ -13,6 +15,8 @@ import { UserModule } from '../user/user.module';
     TypeOrmModule.forFeature([HospitalEntity]),
     JwtModule,
     UserModule,
+    ExamineModule,
+    OpenaiModule,
     forwardRef(() => AppointmentModule),
   ],
   controllers: [HospitalController],

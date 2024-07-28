@@ -16,5 +16,6 @@ import { OpenaiModule } from '../openai/openai.module';
     JwtModule,
     OpenaiModule,
   ],
+  exports: [ExamineService],
 })
 export class ExamineModule {}

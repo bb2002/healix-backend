@@ -3,9 +3,11 @@ import {
   Body,
   Controller,
   forwardRef,
+  Get,
   Inject,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '../common/guards/auth.guard';
@@ -18,12 +20,18 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { isBefore } from 'date-fns';
-import { AppointmentService } from 'src/appointment/appointment.service';
+import { AppointmentService } from '../appointment/appointment.service';
 import {
   CreateAppointmentRequestDto,
   CreateAppointmentResponseDto,
 } from '../appointment/dto/create-appointment.dto';
 import { plainToInstance } from 'class-transformer';
+import { SearchHospitalsRequestDto } from './dto/search-hospitals.dto';
+import { HospitalService } from './hospital.service';
+import { ExamineService } from 'src/examine/examine.service';
+import { OpenaiService } from 'src/openai/openai.service';
+import { HospitalWithDistanceDto } from 'src/openai/dto/hospital-with-distance.dto';
+import { validate } from 'class-validator';
 
 @ApiTags('Hospital')
 @Controller('hospital')
@@ -31,7 +39,54 @@ export class HospitalController {
   constructor(
     @Inject(forwardRef(() => AppointmentService))
     private readonly appointmentService: AppointmentService,
+    private readonly hospitalService: HospitalService,
+    private readonly examineService: ExamineService,
+    private readonly openAIService: OpenaiService,
   ) {}
+
+  @ApiOperation({
+    summary: '주변 병원 찾기',
+  })
+  @Get('/search')
+  async searchHospitals(
+    @Query()
+    payload: {
+      examineId: number;
+      latitude: number;
+      longitude: number;
+    },
+  ) {
+    const dto = plainToInstance(SearchHospitalsRequestDto, payload);
+    await validate(dto);
+    console.log('dto', dto);
+
+    const examine = await this.examineService.getExamineById(dto.examineId);
+    if (!examine) {
+      throw new BadRequestException('examineId is not valid.');
+    }
+
+    const nearHospitals = await this.hospitalService.findNearbyHospitals(
+      dto.latitude,
+      dto.longitude,
+      1,
+    );
+    if (!nearHospitals || nearHospitals.length <= 0) {
+      throw new BadRequestException('There are no hospitals nearby.');
+    }
+
+    await this.openAIService.sortRecommendHospitals(
+      nearHospitals.map((hospital) =>
+        plainToInstance(HospitalWithDistanceDto, {
+          hospital,
+          distance: this.hospitalService.haversineDistance(
+            { latitude: dto.latitude, longitude: dto.longitude },
+            { latitude: hospital.latitude, longitude: hospital.longitude },
+          ),
+        }),
+      ),
+      examine,
+    );
+  }
 
   @ApiOperation({
     summary: '병원 예약 생성',

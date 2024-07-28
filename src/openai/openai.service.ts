@@ -4,6 +4,8 @@ import OpenAI from 'openai';
 import GetDiseaseNameDto from './dto/get-disease-name.dto';
 import Gender from '../common/enums/Gender';
 import { UnknownDiseaseException } from './exceptions/unknown-disease.exception';
+import ExamineEntity from '../examine/entities/examine.entity';
+import { HospitalWithDistanceDto } from './dto/hospital-with-distance.dto';
 
 @Injectable()
 export class OpenaiService {
@@ -62,5 +64,23 @@ export class OpenaiService {
     }
 
     throw new UnknownDiseaseException();
+  }
+
+  async sortRecommendHospitals(
+    nearHospitals: HospitalWithDistanceDto[],
+    examine: ExamineEntity,
+  ) {
+    //     const chatCompletion = await this.openAI.chat.completions.create({
+    //       model: 'gpt-4o-mini',
+    //       messages: [
+    //         {
+    //           role: 'user',
+    //           content: `
+    // 주변에 있는 병원 중 사용자의 증상을 바탕으로 가장 적절한 병원을 찾아주는 서비스를 만들고 있어.
+    //           `,
+    //         },
+    //       ],
+    //     });
+    console.log(nearHospitals);
   }
 }

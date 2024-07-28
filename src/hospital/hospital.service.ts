@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import NearbyHospitalDto from './dto/nearby-hospital.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import HospitalEntity from './entities/hospital.entity';
 import { Repository } from 'typeorm';
-import { plainToInstance } from 'class-transformer';
-import { validate } from 'class-validator';
 import { AppointmentService } from '../appointment/appointment.service';
+
+interface LatLon {
+  latitude: number;
+  longitude: number;
+}
 
 @Injectable()
 export class HospitalService {
@@ -19,8 +21,8 @@ export class HospitalService {
     latitude: number,
     longitude: number,
     radius: number,
-  ): Promise<NearbyHospitalDto[]> {
-    const hospitals = await this.hospitalRepository
+  ): Promise<HospitalEntity[]> {
+    return this.hospitalRepository
       .createQueryBuilder('hospital')
       .where(
         `ST_Distance_Sphere(
@@ -30,35 +32,28 @@ export class HospitalService {
         { longitude, latitude, radius: radius * 1000 },
       )
       .getMany();
-
-    const hospitalDtos = hospitals.map((hospital: HospitalEntity) => {
-      const dto = plainToInstance(NearbyHospitalDto, {
-        institutionName: hospital.institutionName,
-        institutionType: hospital.institutionType,
-        medicalDepartment: hospital.medicalDepartment,
-        medicalDepartmentDoctorCount: hospital.medicalDepartmentDoctorCount,
-        homepage: hospital.homepage,
-        address: hospital.address,
-        tel: hospital.tel,
-        latitude: hospital.latitude,
-        longitude: hospital.longitude,
-      });
-      return dto;
-    });
-
-    for (const dto of hospitalDtos) {
-      const errors = await validate(dto);
-      if (errors.length > 0) {
-        throw new Error(`Validation failed for DTO: ${JSON.stringify(errors)}`);
-      }
-    }
-
-    return hospitalDtos;
   }
 
   async findHospitalById(id: number) {
     return this.hospitalRepository.findOne({
       where: { id },
     });
+  }
+
+  haversineDistance(pos1: LatLon, pos2: LatLon): number {
+    const toRadians = (degree: number) => (degree * Math.PI) / 180;
+
+    const R = 6371000;
+    const dLat = toRadians(pos2.latitude - pos1.latitude);
+    const dLon = toRadians(pos2.longitude - pos1.longitude);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRadians(pos1.latitude)) *
+        Math.cos(toRadians(pos2.latitude)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
   }
 }
