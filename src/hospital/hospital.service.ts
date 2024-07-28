@@ -22,16 +22,26 @@ export class HospitalService {
     longitude: number,
     radius: number,
   ): Promise<HospitalEntity[]> {
-    return this.hospitalRepository
-      .createQueryBuilder('hospital')
-      .where(
-        `ST_Distance_Sphere(
-          point(hospital.longitude, hospital.latitude),
-          point(:longitude, :latitude)
-        ) <= :radius`,
-        { longitude, latitude, radius: radius * 1000 },
-      )
-      .getMany();
+    const query = `
+      SELECT * FROM (
+        SELECT *,
+          (6371 * acos(
+            cos(radians(@0)) * cos(radians(h.latitude)) * cos(radians(h.longitude) - radians(@1)) +
+            sin(radians(@0)) * sin(radians(h.latitude))
+          )) AS distance
+        FROM hospitals h
+      ) AS subquery
+      WHERE distance <= @2
+      ORDER BY distance
+    `;
+
+    const hospitals = await this.hospitalRepository.query(query, [
+      latitude,
+      longitude,
+      radius,
+    ]);
+
+    return hospitals;
   }
 
   async findHospitalById(id: number) {
