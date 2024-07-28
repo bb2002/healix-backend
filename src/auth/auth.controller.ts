@@ -30,6 +30,10 @@ export class AuthController {
       response.cookie(
         'Authorization',
         'Bearer ' + (await this.userService.signIn(dto)),
+        {
+          sameSite: 'none',
+          httpOnly: true,
+        },
       );
       response.sendStatus(HttpStatus.OK);
     } catch (error) {
@@ -55,6 +59,10 @@ export class AuthController {
       response.cookie(
         'Authorization',
         'Bearer ' + (await this.userService.signIn(dto)),
+        {
+          sameSite: 'none',
+          httpOnly: true,
+        },
       );
       response.sendStatus(HttpStatus.OK);
     } catch (error) {
