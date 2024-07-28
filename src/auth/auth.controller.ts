@@ -5,6 +5,7 @@ import {
   Res,
   Body,
   UseGuards,
+  Get,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
@@ -84,6 +85,7 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard)
+  @Get('/verify')
   async verifyToken(@User() user: UserEntity) {
     if (user == null) {
       return null;
