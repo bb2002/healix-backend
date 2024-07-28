@@ -2,10 +2,12 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   forwardRef,
   Inject,
   Param,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '../common/guards/auth.guard';
@@ -14,6 +16,8 @@ import UserEntity from '../user/entities/user.entity';
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
@@ -24,6 +28,7 @@ import {
   CreateAppointmentResponseDto,
 } from '../appointment/dto/create-appointment.dto';
 import { plainToInstance } from 'class-transformer';
+import { UpdateAppointmentRequestDto } from 'src/appointment/dto/update-appointment.dto';
 
 @ApiTags('Hospital')
 @Controller('hospital')
@@ -68,5 +73,58 @@ export class HospitalController {
       hospitalAddress: appointment.hospital.address,
       dateTime: createAppointmentDto.dateTime,
     });
+  }
+
+  @ApiOperation({
+    summary: '병원 예약 수정',
+  })
+  @ApiOkResponse({
+    description: '예약 수정 성공',
+    type: CreateAppointmentResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: '잘못된 요청 데이터',
+  })
+  @ApiNotFoundResponse({
+    description: '해당 예약이 존재하지 않음',
+  })
+  @Put('appointment/:appointmentId')
+  @UseGuards(AuthGuard)
+  async updateAppointment(
+    @Param('appointmentId') appointmentId: number,
+    @Body() dto: UpdateAppointmentRequestDto,
+    @User() user: UserEntity,
+  ) {
+    const updatedAppointment = await this.appointmentService.updateAppointment(
+      appointmentId,
+      dto,
+      user,
+    );
+
+    return plainToInstance(CreateAppointmentResponseDto, {
+      id: updatedAppointment.id,
+      hospitalName: updatedAppointment.hospital.institutionName,
+      hospitalAddress: updatedAppointment.hospital.address,
+      dateTime: updatedAppointment.dateTime,
+    });
+  }
+
+  @ApiOperation({
+    summary: '병원 예약 삭제',
+  })
+  @ApiOkResponse({
+    description: '예약 삭제 성공',
+  })
+  @ApiNotFoundResponse({
+    description: '해당 예약이 존재하지 않음',
+  })
+  @Delete('appointment/:appointmentId')
+  @UseGuards(AuthGuard)
+  async deleteAppointment(
+    @Param('appointmentId') appointmentId: number,
+    @User() user: UserEntity,
+  ) {
+    await this.appointmentService.deleteAppointment(appointmentId, user);
+    return { message: 'Appointment successfully deleted.' };
   }
 }
