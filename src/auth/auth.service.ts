@@ -1,13 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import LoginSuccessDto from './dto/login-success.dto';
 import LoginProvider from '../common/enums/LoginProvider';
 import axios from 'axios';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
+import { Response } from 'express';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class AuthService {
-  constructor() {}
+  constructor(private readonly userService: UserService) {}
 
   async signInWithKakao(accessToken: string): Promise<LoginSuccessDto> {
     const response = await axios.get('https://kapi.kakao.com/v2/user/me', {
@@ -44,5 +46,19 @@ export class AuthService {
     await validate(dto);
 
     return dto;
+  }
+
+  async setAuthorizationCookie(response: Response, payload: LoginSuccessDto) {
+    response.cookie(
+      'Authorization',
+      'Bearer ' + (await this.userService.signIn(payload)),
+      {
+        sameSite: 'none',
+        httpOnly: true,
+        secure: true,
+        expires: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+      },
+    );
+    response.sendStatus(HttpStatus.OK);
   }
 }

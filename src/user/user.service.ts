@@ -29,6 +29,7 @@ export class UserService {
         },
         {
           secret: this.configService.get<string>('JWT_SECRET'),
+          expiresIn: '14d',
         },
       );
     } else {

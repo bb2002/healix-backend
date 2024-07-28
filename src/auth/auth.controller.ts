@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
-import { UserService } from '../user/user.service';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from 'src/common/guards/auth.guard';
 import { User } from 'src/common/decorators/user.decorator';
@@ -18,10 +17,7 @@ import UserEntity from 'src/user/entities/user.entity';
 @ApiTags('Authorization')
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly userService: UserService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @ApiOperation({
     summary: '카카오 계정으로 로그인',
@@ -37,17 +33,7 @@ export class AuthController {
   ) {
     try {
       const dto = await this.authService.signInWithKakao(token);
-
-      response.cookie(
-        'Authorization',
-        'Bearer ' + (await this.userService.signIn(dto)),
-        {
-          sameSite: 'none',
-          httpOnly: true,
-          secure: true,
-        },
-      );
-      response.sendStatus(HttpStatus.OK);
+      this.authService.setAuthorizationCookie(response, dto);
     } catch (error) {
       console.error('Error during Kakao login:', error);
       response.sendStatus(HttpStatus.UNAUTHORIZED);
@@ -68,22 +54,17 @@ export class AuthController {
   ) {
     try {
       const dto = await this.authService.signInWithGoogle(token);
-      response.cookie(
-        'Authorization',
-        'Bearer ' + (await this.userService.signIn(dto)),
-        {
-          sameSite: 'none',
-          httpOnly: true,
-          secure: true,
-        },
-      );
-      response.sendStatus(HttpStatus.OK);
+      this.authService.setAuthorizationCookie(response, dto);
     } catch (error) {
       console.error('Error during google login:', error);
       response.sendStatus(HttpStatus.UNAUTHORIZED);
     }
   }
 
+  @ApiOperation({
+    summary: '토큰 동작 확인',
+    description: '토큰이 동작하면 User의 전체 정보가 출력',
+  })
   @UseGuards(AuthGuard)
   @Get('/verify')
   async verifyToken(@User() user: UserEntity) {
