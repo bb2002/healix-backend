@@ -5,9 +5,7 @@ import HospitalEntity from './entities/hospital.entity';
 import { Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import CreateAppointmentDto from '../appointment/dto/create-appointment.dto';
 import { AppointmentService } from '../appointment/appointment.service';
-import UserEntity from '../user/entities/user.entity';
 
 @Injectable()
 export class HospitalService {
@@ -58,15 +56,9 @@ export class HospitalService {
     return hospitalDtos;
   }
 
-  async createAppointment(
-    hospitalId: number,
-    createAppointmentDto: CreateAppointmentDto,
-    user: UserEntity,
-  ) {
-    return this.appointmentService.createAppointment(
-      hospitalId,
-      createAppointmentDto,
-      user,
-    );
+  async findHospitalById(id: number) {
+    return this.hospitalRepository.findOne({
+      where: { id },
+    });
   }
 }

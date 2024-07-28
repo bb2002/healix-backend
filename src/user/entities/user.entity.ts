@@ -3,9 +3,11 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import LoginProvider from '../../common/enums/LoginProvider';
+import AppointmentEntity from 'src/appointment/entities/appointment.entity';
 
 @Entity('users')
 export default class UserEntity {
@@ -29,4 +31,7 @@ export default class UserEntity {
 
   @DeleteDateColumn()
   deletedAt: Date;
+
+  @OneToMany(() => AppointmentEntity, (appointment) => appointment.user)
+  appointment: AppointmentEntity[];
 }

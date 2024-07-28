@@ -14,19 +14,27 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest() as Request;
-    const authorization = request.cookies['Authorization'];
 
-    if (!authorization) {
-      return false;
+    // 토큰을 구하는 Strategy 를 명시
+    let accessToken: string | null = null;
+    if (request.cookies['Authorization']) {
+      accessToken = request.cookies['Authorization'];
+    } else if (request.headers['authorization']) {
+      accessToken = request.headers['authorization'];
     }
 
-    console.log('jwtsec: ', this.configService.get<string>('JWT_SECRET'));
+    if (!accessToken || !accessToken.startsWith('Bearer ')) {
+      return false;
+    } else {
+      accessToken = accessToken.split('Bearer ')[1];
+    }
 
-    const payload = await this.jwtService.verifyAsync(authorization, {
-      secret: this.configService.get<string>('JWT_SECRET'),
-    });
-
-    if (!payload) {
+    let payload: { providerId: string } | null;
+    try {
+      payload = await this.jwtService.verifyAsync(accessToken, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+      });
+    } catch (ex) {
       return false;
     }
 
