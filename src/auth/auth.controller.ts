@@ -33,6 +33,7 @@ export class AuthController {
         {
           sameSite: 'none',
           httpOnly: true,
+          secure: true,
         },
       );
       response.sendStatus(HttpStatus.OK);
@@ -62,6 +63,7 @@ export class AuthController {
         {
           sameSite: 'none',
           httpOnly: true,
+          secure: true,
         },
       );
       response.sendStatus(HttpStatus.OK);
