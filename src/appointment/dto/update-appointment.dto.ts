@@ -20,11 +20,20 @@ export class UpdateAppointmentRequestDto {
   @IsDate()
   @Type(() => Date)
   dateTime?: Date;
+}
 
+export class UpdateAppointmentResponseDto {
   @ApiPropertyOptional({
-    description: '병원 ID를 업데이트하려면 이 필드를 사용하세요',
+    description: '예약 고유 ID',
     example: 1,
   })
-  @IsOptional()
-  hospitalId?: number;
+  id: number;
+
+  @ApiPropertyOptional({
+    description: '예약된 날짜 ex) YYYY-MM-DDTHH:mm:ss',
+    example: '2024-07-28T13:35:00',
+  })
+  @IsDate()
+  @Type(() => Date)
+  dateTime: Date;
 }

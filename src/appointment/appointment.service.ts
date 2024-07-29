@@ -58,43 +58,35 @@ export class AppointmentService {
     });
   }
 
+  async findAppointmentById(appointmentId: number) {
+    return this.appointmentRepository.findOne({
+      where: { id: appointmentId },
+      relations: ['hospital'],
+    });
+  }
+
   async updateAppointment(
     appointmentId: number,
     updateDto: UpdateAppointmentRequestDto,
     user: UserEntity,
   ) {
-    const appointment = await this.appointmentRepository.findOne({
-      where: { id: appointmentId, user: user },
-      relations: ['hospital'],
-    });
+    const appointment = await this.findAppointmentById(appointmentId);
 
     // 예약 정보 유효성 검사
-    if (!appointment) {
+    if (!appointment || appointment.user.id !== user.id) {
       throw new NotFoundException('Appointment not found');
     }
 
-    // 병원 정보 유효성 검사
-    if (updateDto.hospitalId) {
-      const hospital = await this.hospitalService.findHospitalById(
-        updateDto.hospitalId,
-      );
-      if (!hospital) {
-        throw new BadRequestException('Hospital not found');
-      }
-      appointment.hospital = hospital;
-    }
-
-    // 날짜/시간 유효성 검사
+    // 날짜/시간 유효성 검사 및 업데이트
     if (updateDto.dateTime) {
       const myCurrentAppointments = (await this.getMyAppointments(user)).filter(
         (value) =>
           value.id !== appointmentId &&
-          value.hospital.id == updateDto.hospitalId &&
           isSameDay(value.dateTime, updateDto.dateTime),
       );
       if (myCurrentAppointments && myCurrentAppointments.length != 0) {
         throw new BadRequestException(
-          'Cannot create multiple appointments on the same day at the same hospital.',
+          'Cannot create multiple appointments on the same day',
         );
       }
 
@@ -115,15 +107,12 @@ export class AppointmentService {
   }
 
   async deleteAppointment(appointmentId: number, user: UserEntity) {
-    const appointment = await this.appointmentRepository.findOne({
-      where: { id: appointmentId, user: user },
-    });
+    const appointment = await this.findAppointmentById(appointmentId);
 
-    if (!appointment) {
+    if (!appointment || appointment.user.id !== user.id) {
       throw new NotFoundException('Appointment not found');
     }
 
-    await this.appointmentRepository.remove(appointment);
-    return { message: 'Appointment successfully canceled.' };
+    return this.appointmentRepository.remove(appointment);
   }
 }

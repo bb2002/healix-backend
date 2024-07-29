@@ -28,7 +28,10 @@ import {
   CreateAppointmentResponseDto,
 } from '../appointment/dto/create-appointment.dto';
 import { plainToInstance } from 'class-transformer';
-import { UpdateAppointmentRequestDto } from 'src/appointment/dto/update-appointment.dto';
+import {
+  UpdateAppointmentRequestDto,
+  UpdateAppointmentResponseDto,
+} from 'src/appointment/dto/update-appointment.dto';
 
 @ApiTags('Hospital')
 @Controller('hospital')
@@ -88,7 +91,7 @@ export class HospitalController {
   @ApiNotFoundResponse({
     description: '해당 예약이 존재하지 않음',
   })
-  @Put('appointment/:appointmentId')
+  @Put(':appointmentId/appointment')
   @UseGuards(AuthGuard)
   async updateAppointment(
     @Param('appointmentId') appointmentId: number,
@@ -101,10 +104,8 @@ export class HospitalController {
       user,
     );
 
-    return plainToInstance(CreateAppointmentResponseDto, {
+    return plainToInstance(UpdateAppointmentResponseDto, {
       id: updatedAppointment.id,
-      hospitalName: updatedAppointment.hospital.institutionName,
-      hospitalAddress: updatedAppointment.hospital.address,
       dateTime: updatedAppointment.dateTime,
     });
   }
@@ -118,13 +119,12 @@ export class HospitalController {
   @ApiNotFoundResponse({
     description: '해당 예약이 존재하지 않음',
   })
-  @Delete('appointment/:appointmentId')
+  @Delete(':appointmentId/appointment')
   @UseGuards(AuthGuard)
   async deleteAppointment(
     @Param('appointmentId') appointmentId: number,
     @User() user: UserEntity,
   ) {
     await this.appointmentService.deleteAppointment(appointmentId, user);
-    return { message: 'Appointment successfully deleted.' };
   }
 }
