@@ -57,8 +57,10 @@ export class HospitalController {
     },
   ) {
     const dto = plainToInstance(SearchHospitalsRequestDto, payload);
-    await validate(dto);
-    console.log('dto', dto);
+    const errors = await validate(dto);
+    if (errors.length > 0) {
+      throw new BadRequestException(errors);
+    }
 
     const examine = await this.examineService.getExamineById(dto.examineId);
     if (!examine) {
@@ -74,18 +76,20 @@ export class HospitalController {
       throw new BadRequestException('There are no hospitals nearby.');
     }
 
-    await this.openAIService.sortRecommendHospitals(
-      nearHospitals.map((hospital) =>
-        plainToInstance(HospitalWithDistanceDto, {
-          hospital,
-          distance: this.hospitalService.haversineDistance(
-            { latitude: dto.latitude, longitude: dto.longitude },
-            { latitude: hospital.latitude, longitude: hospital.longitude },
-          ),
-        }),
-      ),
-      examine,
-    );
+    return nearHospitals;
+
+    // await this.openAIService.sortRecommendHospitals(
+    //   nearHospitals.map((hospital) =>
+    //     plainToInstance(HospitalWithDistanceDto, {
+    //       hospital,
+    //       distance: this.hospitalService.haversineDistance(
+    //         { latitude: dto.latitude, longitude: dto.longitude },
+    //         { latitude: hospital.latitude, longitude: hospital.longitude },
+    //       ),
+    //     }),
+    //   ),
+    //   examine,
+    // );
   }
 
   @ApiOperation({
