@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   forwardRef,
+  Get,
   Inject,
   Param,
   Post,
@@ -24,6 +25,7 @@ import {
   CreateAppointmentResponseDto,
 } from '../appointment/dto/create-appointment.dto';
 import { plainToInstance } from 'class-transformer';
+import { GetMyAppointmentsResponseDto } from '../appointment/dto/get-my-appointments.dto';
 
 @ApiTags('Hospital')
 @Controller('hospital')
@@ -68,5 +70,26 @@ export class HospitalController {
       hospitalAddress: appointment.hospital.address,
       dateTime: createAppointmentDto.dateTime,
     });
+  }
+
+  @ApiOperation({
+    summary: '내 예약 목록 조회',
+  })
+  @Get('/appointment')
+  @UseGuards(AuthGuard)
+  async getMyAppointments(
+    @User() user: UserEntity,
+  ): Promise<GetMyAppointmentsResponseDto[]> {
+    const myAppointments =
+      await this.appointmentService.getMyAppointments(user);
+
+    const appointmentDtos = myAppointments.map((appointment) => ({
+      id: appointment.id,
+      hospitalName: appointment.hospital.institutionName,
+      hospitalAddress: appointment.hospital.address,
+      dateTime: appointment.dateTime,
+    }));
+
+    return plainToInstance(GetMyAppointmentsResponseDto, appointmentDtos);
   }
 }

@@ -2,26 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDate, IsNotEmpty, IsString } from 'class-validator';
 
-export class CreateAppointmentRequestDto {
-  @ApiProperty({
-    description: '증상명',
-    example: '편두통',
-  })
-  @IsString()
-  @IsNotEmpty()
-  symptom: string;
-
-  @ApiProperty({
-    description: '예약날짜와 시간 ex) YYYY-MM-DDTHH:mm:ss',
-    example: '2024-07-28T13:35:00',
-  })
-  @IsDate()
-  @Type(() => Date)
-  @IsNotEmpty()
-  dateTime: Date;
-}
-
-export class CreateAppointmentResponseDto {
+export class GetMyAppointmentsResponseDto {
   @ApiProperty({
     description: '예약 고유 ID',
     example: 1,

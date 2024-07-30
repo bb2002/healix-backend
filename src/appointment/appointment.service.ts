@@ -48,7 +48,7 @@ export class AppointmentService {
     });
   }
 
-  async getMyAppointments(user: UserEntity) {
+  async getMyAppointments(user: UserEntity): Promise<AppointmentEntity[]> {
     return this.appointmentRepository.find({
       where: {
         user: user,
