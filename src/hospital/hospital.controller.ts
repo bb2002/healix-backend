@@ -15,8 +15,12 @@ import { User } from '../common/decorators/user.decorator';
 import UserEntity from '../user/entities/user.entity';
 import {
   ApiBadRequestResponse,
+  ApiBody,
   ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { isBefore } from 'date-fns';
@@ -49,6 +53,16 @@ export class HospitalController {
 
   @ApiOperation({
     summary: '주변 병원 찾기',
+  })
+  @ApiQuery({
+    type: SearchHospitalsRequestDto,
+  })
+  @ApiOkResponse({
+    type: SearchHospitalsResponseDto,
+    isArray: true,
+  })
+  @ApiNotFoundResponse({
+    description: '주변에 병원이 전혀 없는 경우',
   })
   @Get('/search')
   async searchHospitals(

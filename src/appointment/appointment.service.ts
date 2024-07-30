@@ -6,11 +6,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import AppointmentEntity from './entities/appointment.entity';
 import UserEntity from '../user/entities/user.entity';
 import { HospitalService } from '../hospital/hospital.service';
-import { isSameDay } from 'date-fns';
+import { endOfDay, isSameDay, startOfDay } from 'date-fns';
 import { CreateAppointmentRequestDto } from './dto/create-appointment.dto';
 
 @Injectable()
@@ -63,6 +63,7 @@ export class AppointmentService {
         hospital: {
           id: hospitalId,
         },
+        dateTime: Between(startOfDay(new Date()), endOfDay(new Date())),
       },
     });
   }
