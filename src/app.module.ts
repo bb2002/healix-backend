@@ -10,6 +10,7 @@ import { UserModule } from './user/user.module';
 import { OpenaiModule } from './openai/openai.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ExamineModule } from './examine/examine.module';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { ExamineModule } from './examine/examine.module';
         entities: [__dirname + '/**/entities/*.entity.{ts,js}'],
         synchronize: true,
         connectionTimeout: 1000 * 120,
+        namingStrategy: new SnakeNamingStrategy(),
       }),
     }),
     JwtModule.registerAsync({

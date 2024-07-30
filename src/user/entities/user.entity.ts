@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import LoginProvider from '../../common/enums/LoginProvider';
-import AppointmentEntity from 'src/appointment/entities/appointment.entity';
+import AppointmentEntity from '../../appointment/entities/appointment.entity';
 
 @Entity('users')
 export default class UserEntity {

@@ -7,6 +7,7 @@ import {
   Inject,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '../common/guards/auth.guard';
@@ -15,16 +16,28 @@ import UserEntity from '../user/entities/user.entity';
 import {
   ApiBadRequestResponse,
   ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { isBefore } from 'date-fns';
-import { AppointmentService } from 'src/appointment/appointment.service';
+import { AppointmentService } from '../appointment/appointment.service';
 import {
   CreateAppointmentRequestDto,
   CreateAppointmentResponseDto,
 } from '../appointment/dto/create-appointment.dto';
 import { plainToInstance } from 'class-transformer';
+import {
+  SearchHospitalsRequestDto,
+  SearchHospitalsResponseDto,
+} from './dto/search-hospitals.dto';
+import { HospitalService } from './hospital.service';
+import { ExamineService } from '../examine/examine.service';
+import { OpenaiService } from '../openai/openai.service';
+import { validate } from 'class-validator';
+import haversineDistance from '../common/utils/HaversineDistance';
 import { GetMyAppointmentsResponseDto } from '../appointment/dto/get-my-appointments.dto';
 
 @ApiTags('Hospital')
@@ -33,7 +46,88 @@ export class HospitalController {
   constructor(
     @Inject(forwardRef(() => AppointmentService))
     private readonly appointmentService: AppointmentService,
+    private readonly hospitalService: HospitalService,
+    private readonly examineService: ExamineService,
+    private readonly openAIService: OpenaiService,
   ) {}
+
+  @ApiOperation({
+    summary: '주변 병원 찾기',
+  })
+  @ApiQuery({
+    type: SearchHospitalsRequestDto,
+  })
+  @ApiOkResponse({
+    type: SearchHospitalsResponseDto,
+    isArray: true,
+  })
+  @ApiNotFoundResponse({
+    description: '주변에 병원이 전혀 없는 경우',
+  })
+  @Get('/search')
+  async searchHospitals(
+    @Query()
+    payload: {
+      examineId: number;
+      latitude: number;
+      longitude: number;
+    },
+  ): Promise<SearchHospitalsResponseDto[]> {
+    const dto = plainToInstance(SearchHospitalsRequestDto, payload);
+    const errors = await validate(dto);
+    if (errors.length > 0) {
+      throw new BadRequestException(errors);
+    }
+
+    const examine = await this.examineService.getExamineById(dto.examineId);
+    if (!examine) {
+      throw new BadRequestException('examineId is not valid.');
+    }
+
+    const nearHospitals = await this.hospitalService.findNearbyHospitals(
+      dto.latitude,
+      dto.longitude,
+      1,
+    );
+    if (!nearHospitals || nearHospitals.length <= 0) {
+      // 주변에 병원이 아예 없는 경우
+      throw new BadRequestException('There are no hospitals nearby.');
+    }
+
+    const sortedHospitals = await this.openAIService.sortRecommendHospitals(
+      nearHospitals,
+      examine,
+    );
+
+    return Promise.all(
+      sortedHospitals.map(async ({ hospitalId, reason }) => {
+        const searchHospitalsResponseDto = new SearchHospitalsResponseDto();
+        const hospital =
+          await this.hospitalService.findHospitalById(hospitalId);
+        if (!hospital) {
+          return null;
+        }
+
+        searchHospitalsResponseDto.hospitalId = hospitalId;
+        searchHospitalsResponseDto.hospitalAddress = hospital.address;
+        searchHospitalsResponseDto.hospitalName = hospital.institutionName;
+        searchHospitalsResponseDto.reason = reason;
+        searchHospitalsResponseDto.distance = haversineDistance(
+          {
+            latitude: dto.latitude,
+            longitude: dto.longitude,
+          },
+          {
+            latitude: hospital.latitude,
+            longitude: hospital.longitude,
+          },
+        );
+        searchHospitalsResponseDto.waiting =
+          await this.appointmentService.countAppointment(hospitalId);
+        return searchHospitalsResponseDto;
+      }),
+    );
+  }
 
   @ApiOperation({
     summary: '병원 예약 생성',

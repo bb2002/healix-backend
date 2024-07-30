@@ -10,9 +10,9 @@ import {
 import { AuthService } from './auth.service';
 import { Response } from 'express';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from 'src/common/guards/auth.guard';
-import { User } from 'src/common/decorators/user.decorator';
-import UserEntity from 'src/user/entities/user.entity';
+import { AuthGuard } from '../common/guards/auth.guard';
+import { User } from '../common/decorators/user.decorator';
+import UserEntity from '../user/entities/user.entity';
 
 @ApiTags('Authorization')
 @Controller('auth')
