@@ -38,6 +38,7 @@ import { ExamineService } from '../examine/examine.service';
 import { OpenaiService } from '../openai/openai.service';
 import { validate } from 'class-validator';
 import haversineDistance from '../common/utils/HaversineDistance';
+import { GetMyAppointmentsResponseDto } from '../appointment/dto/get-my-appointments.dto';
 
 @ApiTags('Hospital')
 @Controller('hospital')
@@ -163,5 +164,26 @@ export class HospitalController {
       hospitalAddress: appointment.hospital.address,
       dateTime: createAppointmentDto.dateTime,
     });
+  }
+
+  @ApiOperation({
+    summary: '내 예약 목록 조회',
+  })
+  @Get('/appointment')
+  @UseGuards(AuthGuard)
+  async getMyAppointments(
+    @User() user: UserEntity,
+  ): Promise<GetMyAppointmentsResponseDto[]> {
+    const myAppointments =
+      await this.appointmentService.getMyAppointments(user);
+
+    const appointmentDtos = myAppointments.map((appointment) => ({
+      id: appointment.id,
+      hospitalName: appointment.hospital.institutionName,
+      hospitalAddress: appointment.hospital.address,
+      dateTime: appointment.dateTime,
+    }));
+
+    return plainToInstance(GetMyAppointmentsResponseDto, appointmentDtos);
   }
 }
