@@ -15,7 +15,6 @@ import { User } from '../common/decorators/user.decorator';
 import UserEntity from '../user/entities/user.entity';
 import {
   ApiBadRequestResponse,
-  ApiBody,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -38,7 +37,7 @@ import { HospitalService } from './hospital.service';
 import { ExamineService } from '../examine/examine.service';
 import { OpenaiService } from '../openai/openai.service';
 import { validate } from 'class-validator';
-import haversineDistance from 'src/common/utils/HaversineDistance';
+import haversineDistance from '../common/utils/HaversineDistance';
 
 @ApiTags('Hospital')
 @Controller('hospital')

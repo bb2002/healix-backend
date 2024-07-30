@@ -6,7 +6,7 @@ import Gender from '../common/enums/Gender';
 import { UnknownDiseaseException } from './exceptions/unknown-disease.exception';
 import ExamineEntity from '../examine/entities/examine.entity';
 import { FindNearbyHospitalsDto } from '../hospital/dto/find-nearby-hospitals.dto';
-import { symptomToRealName } from 'src/common/enums/Symptom';
+import { symptomToRealName } from '../common/enums/Symptom';
 import { HospitalNotFoundException } from './exceptions/hospital-not-found.exception';
 import { SortRecommendHospitals } from './dto/sort-recommend-hospitals.dto';
 import { validate } from 'class-validator';
