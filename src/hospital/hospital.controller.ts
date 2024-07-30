@@ -26,12 +26,15 @@ import {
   CreateAppointmentResponseDto,
 } from '../appointment/dto/create-appointment.dto';
 import { plainToInstance } from 'class-transformer';
-import { SearchHospitalsRequestDto } from './dto/search-hospitals.dto';
+import {
+  SearchHospitalsRequestDto,
+  SearchHospitalsResponseDto,
+} from './dto/search-hospitals.dto';
 import { HospitalService } from './hospital.service';
-import { ExamineService } from 'src/examine/examine.service';
-import { OpenaiService } from 'src/openai/openai.service';
-import { HospitalWithDistanceDto } from 'src/openai/dto/hospital-with-distance.dto';
+import { ExamineService } from '../examine/examine.service';
+import { OpenaiService } from '../openai/openai.service';
 import { validate } from 'class-validator';
+import haversineDistance from 'src/common/utils/HaversineDistance';
 
 @ApiTags('Hospital')
 @Controller('hospital')
@@ -55,7 +58,7 @@ export class HospitalController {
       latitude: number;
       longitude: number;
     },
-  ) {
+  ): Promise<SearchHospitalsResponseDto[]> {
     const dto = plainToInstance(SearchHospitalsRequestDto, payload);
     const errors = await validate(dto);
     if (errors.length > 0) {
@@ -73,23 +76,43 @@ export class HospitalController {
       1,
     );
     if (!nearHospitals || nearHospitals.length <= 0) {
+      // 주변에 병원이 아예 없는 경우
       throw new BadRequestException('There are no hospitals nearby.');
     }
 
-    return nearHospitals;
+    const sortedHospitals = await this.openAIService.sortRecommendHospitals(
+      nearHospitals,
+      examine,
+    );
 
-    // await this.openAIService.sortRecommendHospitals(
-    //   nearHospitals.map((hospital) =>
-    //     plainToInstance(HospitalWithDistanceDto, {
-    //       hospital,
-    //       distance: this.hospitalService.haversineDistance(
-    //         { latitude: dto.latitude, longitude: dto.longitude },
-    //         { latitude: hospital.latitude, longitude: hospital.longitude },
-    //       ),
-    //     }),
-    //   ),
-    //   examine,
-    // );
+    return Promise.all(
+      sortedHospitals.map(async ({ hospitalId, reason }) => {
+        const searchHospitalsResponseDto = new SearchHospitalsResponseDto();
+        const hospital =
+          await this.hospitalService.findHospitalById(hospitalId);
+        if (!hospital) {
+          return null;
+        }
+
+        searchHospitalsResponseDto.hospitalId = hospitalId;
+        searchHospitalsResponseDto.hospitalAddress = hospital.address;
+        searchHospitalsResponseDto.hospitalName = hospital.institutionName;
+        searchHospitalsResponseDto.reason = reason;
+        searchHospitalsResponseDto.distance = haversineDistance(
+          {
+            latitude: dto.latitude,
+            longitude: dto.longitude,
+          },
+          {
+            latitude: hospital.latitude,
+            longitude: hospital.longitude,
+          },
+        );
+        searchHospitalsResponseDto.waiting =
+          await this.appointmentService.countAppointment(hospitalId);
+        return searchHospitalsResponseDto;
+      }),
+    );
   }
 
   @ApiOperation({

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber, Max, Min } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
 
 export class SearchHospitalsRequestDto {
   @ApiProperty({
@@ -30,4 +30,24 @@ export class SearchHospitalsRequestDto {
   @IsNumber()
   @Type(() => Number)
   examineId: number;
+}
+
+export class SearchHospitalsResponseDto {
+  @IsNumber()
+  hospitalId: number;
+
+  @IsString()
+  hospitalName: string;
+
+  @IsString()
+  hospitalAddress: string;
+
+  @IsString()
+  reason: string;
+
+  @IsNumber()
+  distance: number;
+
+  @IsNumber()
+  waiting: number;
 }

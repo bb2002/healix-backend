@@ -9,7 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import AppointmentEntity from './entities/appointment.entity';
 import UserEntity from '../user/entities/user.entity';
-import { HospitalService } from 'src/hospital/hospital.service';
+import { HospitalService } from '../hospital/hospital.service';
 import { isSameDay } from 'date-fns';
 import { CreateAppointmentRequestDto } from './dto/create-appointment.dto';
 
@@ -54,6 +54,16 @@ export class AppointmentService {
         user: user,
       },
       relations: ['hospital'],
+    });
+  }
+
+  async countAppointment(hospitalId: number) {
+    return this.appointmentRepository.count({
+      where: {
+        hospital: {
+          id: hospitalId,
+        },
+      },
     });
   }
 }

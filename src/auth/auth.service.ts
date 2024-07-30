@@ -5,7 +5,7 @@ import axios from 'axios';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { Response } from 'express';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class AuthService {
