@@ -2,11 +2,13 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   forwardRef,
   Get,
   Inject,
   Param,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -30,15 +32,19 @@ import {
 } from '../appointment/dto/create-appointment.dto';
 import { plainToInstance } from 'class-transformer';
 import {
-  SearchHospitalsRequestDto,
-  SearchHospitalsResponseDto,
-} from './dto/search-hospitals.dto';
+  UpdateAppointmentRequestDto,
+  UpdateAppointmentResponseDto,
+} from 'src/appointment/dto/update-appointment.dto';
 import { HospitalService } from './hospital.service';
 import { ExamineService } from '../examine/examine.service';
 import { OpenaiService } from '../openai/openai.service';
 import { validate } from 'class-validator';
 import haversineDistance from '../common/utils/HaversineDistance';
 import { GetMyAppointmentsResponseDto } from '../appointment/dto/get-my-appointments.dto';
+import {
+  SearchHospitalsRequestDto,
+  SearchHospitalsResponseDto,
+} from './dto/search-hospitals.dto';
 
 @ApiTags('Hospital')
 @Controller('hospital')
@@ -164,6 +170,56 @@ export class HospitalController {
       hospitalAddress: appointment.hospital.address,
       dateTime: createAppointmentDto.dateTime,
     });
+  }
+
+  @ApiOperation({
+    summary: '병원 예약 수정',
+  })
+  @ApiOkResponse({
+    description: '예약 수정 성공',
+    type: CreateAppointmentResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description: '잘못된 요청 데이터',
+  })
+  @ApiNotFoundResponse({
+    description: '해당 예약이 존재하지 않음',
+  })
+  @Put(':appointmentId/appointment')
+  @UseGuards(AuthGuard)
+  async updateAppointment(
+    @Param('appointmentId') appointmentId: number,
+    @Body() dto: UpdateAppointmentRequestDto,
+    @User() user: UserEntity,
+  ) {
+    const updatedAppointment = await this.appointmentService.updateAppointment(
+      appointmentId,
+      dto,
+      user,
+    );
+
+    return plainToInstance(UpdateAppointmentResponseDto, {
+      id: updatedAppointment.id,
+      dateTime: updatedAppointment.dateTime,
+    });
+  }
+
+  @ApiOperation({
+    summary: '병원 예약 삭제',
+  })
+  @ApiOkResponse({
+    description: '예약 삭제 성공',
+  })
+  @ApiNotFoundResponse({
+    description: '해당 예약이 존재하지 않음',
+  })
+  @Delete(':appointmentId/appointment')
+  @UseGuards(AuthGuard)
+  async deleteAppointment(
+    @Param('appointmentId') appointmentId: number,
+    @User() user: UserEntity,
+  ) {
+    await this.appointmentService.deleteAppointment(appointmentId, user);
   }
 
   @ApiOperation({
