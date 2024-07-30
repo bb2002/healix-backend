@@ -18,6 +18,10 @@ interface CSVRecord {
 
 const results: CSVRecord = {};
 
+function replace(str: string) {
+  return str.replace(/'/g, '');
+}
+
 async function main() {
   await new Promise<void>((resolve, reject) => {
     fs.createReadStream('병원정보.csv')
@@ -31,8 +35,8 @@ async function main() {
           homepage: data['병원홈페이지'],
           address: data['주소'],
           tel: data['전화번호'],
-          latitude: data['좌표(X)'],
-          longitude: data['좌표(Y)'],
+          latitude: data['좌표(Y)'],
+          longitude: data['좌표(X)'],
         };
       })
       .on('end', () => {
@@ -65,30 +69,56 @@ async function main() {
   });
 
   const writeStream = createWriteStream('hospitals.sql');
-  const limit = 10;
-  let size = 0;
+  const start = 60000;
+  const stop = 80000;
+  let cursor = 0;
   for (const key in results) {
-    const institution = results[key];
+    const {
+      institution_name,
+      institution_type,
+      medical_department,
+      medical_department_doctor_count,
+      homepage,
+      address,
+      tel,
+      latitude,
+      longitude,
+    } = results[key];
+
+    if (
+      !institution_name ||
+      !institution_type ||
+      !medical_department ||
+      !address ||
+      !latitude ||
+      !longitude
+    ) {
+      continue;
+    }
+
     const line =
       'INSERT INTO dbo.hospitals (' +
       'institution_name,institution_type,medical_department,medical_department_doctor_count,homepage,address,tel,latitude,longitude' +
       ') VALUES (' +
-      `${institution.institution_name ? `N'${institution.institution_name}'` : 'NULL'},` +
-      `${institution.institution_type ? `N'${institution.institution_type}'` : 'NULL'},` +
-      `${institution.medical_department ? `N'${institution.medical_department}'` : 'NULL'},` +
-      `${institution.medical_department_doctor_count !== null ? institution.medical_department_doctor_count : 'NULL'},` +
-      `${institution.homepage ? `N'${institution.homepage}'` : 'NULL'},` +
-      `${institution.address ? `N'${institution.address}'` : 'NULL'},` +
-      `${institution.tel ? `'${institution.tel}'` : 'NULL'},` +
-      `${institution.latitude !== null ? institution.latitude : 'NULL'},` +
-      `${institution.longitude !== null ? institution.longitude : 'NULL'}` +
+      `N'${replace(institution_name)}',` +
+      `N'${replace(institution_type)}',` +
+      `N'${replace(medical_department)}',` +
+      `${medical_department_doctor_count !== null ? medical_department_doctor_count : 0},` +
+      `${homepage ? `N'${replace(homepage)}'` : 'NULL'},` +
+      `N'${replace(address)}',` +
+      `${tel ? `'${replace(tel)}'` : 'NULL'},` +
+      `${latitude},` +
+      `${longitude}` +
       ');';
-    writeStream.write(line + '\n');
-    ++size;
+    if (cursor >= start && cursor < stop) {
+      writeStream.write(line + '\n');
+    }
 
-    if (size > limit) {
+    if (cursor > stop) {
       break;
     }
+
+    ++cursor;
   }
 
   writeStream.end(() => {

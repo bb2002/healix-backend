@@ -6,11 +6,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import AppointmentEntity from './entities/appointment.entity';
 import UserEntity from '../user/entities/user.entity';
 import { HospitalService } from 'src/hospital/hospital.service';
-import { isBefore, isSameDay } from 'date-fns';
+import { isBefore, endOfDay, isSameDay, startOfDay } from 'date-fns';
 import { CreateAppointmentRequestDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentRequestDto } from './dto/update-appointment.dto';
 
@@ -49,7 +49,7 @@ export class AppointmentService {
     });
   }
 
-  async getMyAppointments(user: UserEntity) {
+  async getMyAppointments(user: UserEntity): Promise<AppointmentEntity[]> {
     return this.appointmentRepository.find({
       where: {
         user: user,
@@ -114,5 +114,15 @@ export class AppointmentService {
     }
 
     return this.appointmentRepository.remove(appointment);
+  }
+  async countAppointment(hospitalId: number) {
+    return this.appointmentRepository.count({
+      where: {
+        hospital: {
+          id: hospitalId,
+        },
+        dateTime: Between(startOfDay(new Date()), endOfDay(new Date())),
+      },
+    });
   }
 }

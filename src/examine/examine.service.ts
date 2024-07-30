@@ -20,4 +20,12 @@ export class ExamineService {
     examine.diseaseSolution = dto.diseaseSolution;
     return this.examineRepository.save(examine);
   }
+
+  async getExamineById(examineId: number): Promise<ExamineEntity> {
+    return this.examineRepository.findOne({
+      where: {
+        id: examineId,
+      },
+    });
+  }
 }

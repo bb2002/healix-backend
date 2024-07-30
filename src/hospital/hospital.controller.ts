@@ -4,10 +4,12 @@ import {
   Controller,
   Delete,
   forwardRef,
+  Get,
   Inject,
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '../common/guards/auth.guard';
@@ -19,10 +21,11 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { isBefore } from 'date-fns';
-import { AppointmentService } from 'src/appointment/appointment.service';
+import { AppointmentService } from '../appointment/appointment.service';
 import {
   CreateAppointmentRequestDto,
   CreateAppointmentResponseDto,
@@ -32,6 +35,16 @@ import {
   UpdateAppointmentRequestDto,
   UpdateAppointmentResponseDto,
 } from 'src/appointment/dto/update-appointment.dto';
+import { HospitalService } from './hospital.service';
+import { ExamineService } from '../examine/examine.service';
+import { OpenaiService } from '../openai/openai.service';
+import { validate } from 'class-validator';
+import haversineDistance from '../common/utils/HaversineDistance';
+import { GetMyAppointmentsResponseDto } from '../appointment/dto/get-my-appointments.dto';
+import {
+  SearchHospitalsRequestDto,
+  SearchHospitalsResponseDto,
+} from './dto/search-hospitals.dto';
 
 @ApiTags('Hospital')
 @Controller('hospital')
@@ -39,7 +52,88 @@ export class HospitalController {
   constructor(
     @Inject(forwardRef(() => AppointmentService))
     private readonly appointmentService: AppointmentService,
+    private readonly hospitalService: HospitalService,
+    private readonly examineService: ExamineService,
+    private readonly openAIService: OpenaiService,
   ) {}
+
+  @ApiOperation({
+    summary: '주변 병원 찾기',
+  })
+  @ApiQuery({
+    type: SearchHospitalsRequestDto,
+  })
+  @ApiOkResponse({
+    type: SearchHospitalsResponseDto,
+    isArray: true,
+  })
+  @ApiNotFoundResponse({
+    description: '주변에 병원이 전혀 없는 경우',
+  })
+  @Get('/search')
+  async searchHospitals(
+    @Query()
+    payload: {
+      examineId: number;
+      latitude: number;
+      longitude: number;
+    },
+  ): Promise<SearchHospitalsResponseDto[]> {
+    const dto = plainToInstance(SearchHospitalsRequestDto, payload);
+    const errors = await validate(dto);
+    if (errors.length > 0) {
+      throw new BadRequestException(errors);
+    }
+
+    const examine = await this.examineService.getExamineById(dto.examineId);
+    if (!examine) {
+      throw new BadRequestException('examineId is not valid.');
+    }
+
+    const nearHospitals = await this.hospitalService.findNearbyHospitals(
+      dto.latitude,
+      dto.longitude,
+      1,
+    );
+    if (!nearHospitals || nearHospitals.length <= 0) {
+      // 주변에 병원이 아예 없는 경우
+      throw new BadRequestException('There are no hospitals nearby.');
+    }
+
+    const sortedHospitals = await this.openAIService.sortRecommendHospitals(
+      nearHospitals,
+      examine,
+    );
+
+    return Promise.all(
+      sortedHospitals.map(async ({ hospitalId, reason }) => {
+        const searchHospitalsResponseDto = new SearchHospitalsResponseDto();
+        const hospital =
+          await this.hospitalService.findHospitalById(hospitalId);
+        if (!hospital) {
+          return null;
+        }
+
+        searchHospitalsResponseDto.hospitalId = hospitalId;
+        searchHospitalsResponseDto.hospitalAddress = hospital.address;
+        searchHospitalsResponseDto.hospitalName = hospital.institutionName;
+        searchHospitalsResponseDto.reason = reason;
+        searchHospitalsResponseDto.distance = haversineDistance(
+          {
+            latitude: dto.latitude,
+            longitude: dto.longitude,
+          },
+          {
+            latitude: hospital.latitude,
+            longitude: hospital.longitude,
+          },
+        );
+        searchHospitalsResponseDto.waiting =
+          await this.appointmentService.countAppointment(hospitalId);
+        return searchHospitalsResponseDto;
+      }),
+    );
+  }
 
   @ApiOperation({
     summary: '병원 예약 생성',
@@ -126,5 +220,26 @@ export class HospitalController {
     @User() user: UserEntity,
   ) {
     await this.appointmentService.deleteAppointment(appointmentId, user);
+  }
+
+  @ApiOperation({
+    summary: '내 예약 목록 조회',
+  })
+  @Get('/appointment')
+  @UseGuards(AuthGuard)
+  async getMyAppointments(
+    @User() user: UserEntity,
+  ): Promise<GetMyAppointmentsResponseDto[]> {
+    const myAppointments =
+      await this.appointmentService.getMyAppointments(user);
+
+    const appointmentDtos = myAppointments.map((appointment) => ({
+      id: appointment.id,
+      hospitalName: appointment.hospital.institutionName,
+      hospitalAddress: appointment.hospital.address,
+      dateTime: appointment.dateTime,
+    }));
+
+    return plainToInstance(GetMyAppointmentsResponseDto, appointmentDtos);
   }
 }
