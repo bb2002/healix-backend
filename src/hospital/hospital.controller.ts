@@ -130,6 +130,8 @@ export class HospitalController {
         );
         searchHospitalsResponseDto.waiting =
           await this.appointmentService.countAppointment(hospitalId);
+        searchHospitalsResponseDto.latitude = hospital.latitude;
+        searchHospitalsResponseDto.longitude = hospital.longitude;
         return searchHospitalsResponseDto;
       }),
     );
