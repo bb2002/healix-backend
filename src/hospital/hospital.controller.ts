@@ -45,6 +45,7 @@ import {
   SearchHospitalsRequestDto,
   SearchHospitalsResponseDto,
 } from './dto/search-hospitals.dto';
+import { SearchHospitalsWithoutExamineRequestDto } from './dto/search-hospitals-without-examine.dto';
 
 @ApiTags('Hospital')
 @Controller('hospital')
@@ -130,6 +131,59 @@ export class HospitalController {
         );
         searchHospitalsResponseDto.waiting =
           await this.appointmentService.countAppointment(hospitalId);
+        return searchHospitalsResponseDto;
+      }),
+    );
+  }
+
+  @Get('/search/without-examine')
+  async searchHospitalsWithoutExamineId(
+    @Query()
+    payload: {
+      latitude: number;
+      longitude: number;
+    },
+  ): Promise<SearchHospitalsResponseDto[]> {
+    console.log(payload);
+    const dto = plainToInstance(
+      SearchHospitalsWithoutExamineRequestDto,
+      payload,
+    );
+    console.log(dto);
+    // const errors = await validate(dto);
+    // if (errors.length > 0) {
+    //   throw new BadRequestException(errors);
+    // }
+
+    const nearHospitals = await this.hospitalService.findNearbyHospitals(
+      dto.latitude,
+      dto.longitude,
+      1,
+    );
+    if (!nearHospitals || nearHospitals.length <= 0) {
+      // 주변에 병원이 아예 없는 경우
+      throw new BadRequestException('There are no hospitals nearby.');
+    }
+
+    return Promise.all(
+      nearHospitals.map(async (hospital) => {
+        const searchHospitalsResponseDto = new SearchHospitalsResponseDto();
+
+        searchHospitalsResponseDto.hospitalId = hospital.id;
+        searchHospitalsResponseDto.hospitalAddress = hospital.address;
+        searchHospitalsResponseDto.hospitalName = hospital.institutionName;
+        searchHospitalsResponseDto.distance = haversineDistance(
+          {
+            latitude: dto.latitude,
+            longitude: dto.longitude,
+          },
+          {
+            latitude: hospital.latitude,
+            longitude: hospital.longitude,
+          },
+        );
+        searchHospitalsResponseDto.waiting =
+          await this.appointmentService.countAppointment(hospital.id);
         return searchHospitalsResponseDto;
       }),
     );
