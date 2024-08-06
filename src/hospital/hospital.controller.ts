@@ -186,6 +186,7 @@ export class HospitalController {
         searchHospitalsResponseDto.hospitalId = hospital.id;
         searchHospitalsResponseDto.hospitalAddress = hospital.address;
         searchHospitalsResponseDto.hospitalName = hospital.institutionName;
+        searchHospitalsResponseDto.reason = '주변 병원을 찾았어요';
         searchHospitalsResponseDto.distance = haversineDistance(
           {
             latitude: dto.latitude,
@@ -198,6 +199,8 @@ export class HospitalController {
         );
         searchHospitalsResponseDto.waiting =
           await this.appointmentService.countAppointment(hospital.id);
+        searchHospitalsResponseDto.latitude = hospital.latitude;
+        searchHospitalsResponseDto.longitude = hospital.longitude;
         return searchHospitalsResponseDto;
       }),
     );
