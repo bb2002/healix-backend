@@ -120,4 +120,17 @@ ${nearHospitals.map((hospital) => hospital.id + ' | ' + hospital.institutionName
 
     throw new HospitalNotFoundException();
   }
+
+  async getEmbedding(text: string): Promise<number[] | null> {
+    const response = await this.openAI.embeddings.create({
+      model: 'text-embedding-3-small',
+      input: text,
+      dimensions: 512,
+    });
+    const vector = response?.data[0]?.embedding;
+    if (vector) {
+      return vector;
+    }
+    throw new Error('Failed to get embedding');
+  }
 }

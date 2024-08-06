@@ -11,6 +11,7 @@ import { OpenaiModule } from './openai/openai.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ExamineModule } from './examine/examine.module';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+import { EmbeddingModule } from './embedding/embedding.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
     UserModule,
     OpenaiModule,
     ExamineModule,
+    EmbeddingModule,
   ],
   controllers: [AppController],
 })
