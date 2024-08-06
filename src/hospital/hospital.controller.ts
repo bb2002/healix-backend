@@ -293,6 +293,13 @@ export class HospitalController {
   @ApiOperation({
     summary: '내 예약 목록 조회',
   })
+  @ApiOkResponse({
+    description: '예약 목록 조회 성공',
+    type: GetMyAppointmentsResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: '예약 목록이 존재하지 않음',
+  })
   @Get('/appointment')
   @UseGuards(AuthGuard)
   async getMyAppointments(
