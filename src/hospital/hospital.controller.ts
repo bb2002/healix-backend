@@ -149,11 +149,10 @@ export class HospitalController {
       SearchHospitalsWithoutExamineRequestDto,
       payload,
     );
-    console.log(dto);
-    // const errors = await validate(dto);
-    // if (errors.length > 0) {
-    //   throw new BadRequestException(errors);
-    // }
+    const errors = await validate(dto);
+    if (errors.length > 0) {
+      throw new BadRequestException(errors);
+    }
 
     const nearHospitals = await this.hospitalService.findNearbyHospitals(
       dto.latitude,
