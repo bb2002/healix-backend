@@ -136,6 +136,19 @@ export class HospitalController {
     );
   }
 
+  @ApiOperation({
+    summary: '주변 병원 찾기(examineId 없이)',
+  })
+  @ApiQuery({
+    type: SearchHospitalsWithoutExamineRequestDto,
+  })
+  @ApiOkResponse({
+    type: SearchHospitalsResponseDto,
+    isArray: true,
+  })
+  @ApiNotFoundResponse({
+    description: '주변에 병원이 전혀 없는 경우',
+  })
   @Get('/search/without-examine')
   async searchHospitalsWithoutExamineId(
     @Query()
