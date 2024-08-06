@@ -1,9 +1,9 @@
 import {
+  Body,
   Controller,
   Get,
   HttpException,
   HttpStatus,
-  Query,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -12,6 +12,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { EmbeddingService } from './embedding.service';
+import { EmbeddingRequestDto, EmbeddingResponseDto } from './dto/embedding.dto';
 
 @ApiTags('Embedding')
 @Controller('embedding')
@@ -24,20 +25,21 @@ export class EmbeddingController {
   })
   @ApiCreatedResponse({
     description: '임베딩 성공',
+    type: EmbeddingResponseDto,
   })
   @ApiBadRequestResponse({
     description: '잘못된 요청',
   })
   @Get()
-  async embedding(@Query('input') input: string) {
-    if (!input) {
-      throw new HttpException(
-        'Input query parameter is required',
-        HttpStatus.BAD_REQUEST,
-      );
+  async embedding(@Body() requestDto: EmbeddingRequestDto) {
+    if (!requestDto.input) {
+      throw new HttpException('Input is required', HttpStatus.BAD_REQUEST);
     }
-    const similarEmbeddings =
-      await this.embeddingService.findSimilarEmbeddings(input);
-    return { data: similarEmbeddings };
+    const similarEmbeddings = await this.embeddingService.findSimilarEmbeddings(
+      requestDto.input,
+    );
+    const responseDto = new EmbeddingResponseDto();
+    responseDto.similarWords = similarEmbeddings;
+    return responseDto;
   }
 }
